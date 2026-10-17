@@ -1,1 +1,170 @@
+# Mini strace-Like Process Monitoring Tool
 
+**Batch 6 | Operating Systems | Computer Science and Engineering (CSE)**
+
+**Team IDs:** 2520030223, 2520030270, 2520030301
+
+A simplified Linux system-call tracing utility written in C using the `ptrace()` system call. The tool launches a target program, monitors it, and displays its system-call activity in the terminal. It is an educational project that helps show how user programs interact with the Linux kernel.
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Objectives](#objectives)
+3. [How It Works](#how-it-works)
+4. [Technologies Used](#technologies-used)
+5. [Requirements](#requirements)
+6. [Build and Run](#build-and-run)
+7. [Sample Output (Illustrative)](#sample-output-illustrative)
+8. [Testing Status](#testing-status)
+9. [Limitations](#limitations)
+10. [Future Scope](#future-scope)
+11. [Project Structure](#project-structure)
+
+---
+
+## Overview
+
+A **system call** is the interface a user program uses to request services from the operating system kernel, such as file I/O and process control. These calls normally happen in the background and are not visible to the user.
+
+`strace` is a standard Linux utility that traces the system calls made by a process. This project implements a **simplified version** of that idea in C, using `ptrace()`, so students can see and understand system-call activity more easily.
+
+## Objectives
+
+- Monitor a target process.
+- Capture system-call entry and exit events.
+- Display relevant system-call information in the terminal.
+- Understand process creation, debugging, and kernel interaction.
+- Demonstrate core Operating Systems concepts.
+
+## How It Works
+
+The tool follows this workflow:
+
+```
+Target Program
+      |
+      v
+fork()            -> create a child process
+      |
+      v
+PTRACE_TRACEME    -> child asks to be traced by its parent
+      |
+      v
+execvp()          -> child runs the target program
+      |
+      v
+PTRACE_SYSCALL    -> parent resumes the child; it stops at each
+      |              system-call entry and exit (waitpid() waits)
+      v
+PTRACE_GETREGS    -> read register information, where supported
+      |
+      v
+Display trace output in the terminal
+```
+
+**Roles**
+
+- **Tracer:** the parent process, which monitors the target.
+- **Tracee:** the child process, which runs the target program.
+
+**Steps**
+
+1. Read the target program and its arguments from the command line.
+2. Create a child process using `fork()`.
+3. Enable tracing in the child with `PTRACE_TRACEME`.
+4. Execute the target program using `execvp()`.
+5. Use `PTRACE_SYSCALL` and `waitpid()` to monitor system-call events.
+6. Where supported, retrieve register information with `PTRACE_GETREGS`.
+7. Display the captured information in the terminal.
+
+## Technologies Used
+
+| Area | Technology |
+|---|---|
+| Programming language | C |
+| Operating system | Linux |
+| System-call tracing | `ptrace()` |
+| Process management | `fork()`, `execvp()`, `waitpid()` |
+| Compiler | GCC |
+| Development environment | Linux terminal and text editor |
+
+## Requirements
+
+- A Linux system
+- GCC
+- Permission to trace the target process (see [Limitations](#limitations))
+
+## Build and Run
+
+> Replace `mini_strace.c` with the actual name of your source file.
+
+**Compile**
+
+```bash
+gcc -o mini_strace mini_strace.c
+```
+
+**Run**
+
+```bash
+./mini_strace <program> [arguments...]
+```
+
+**Example**
+
+```bash
+./mini_strace ls -l
+```
+
+## Sample Output (Illustrative)
+
+> **Illustrative only.** The output below shows the kind of information the tool is meant to display. It has not been captured from a validated run. Actual output depends on the program being traced, the architecture, and your implementation.
+
+```
+$ ./mini_strace ./hello
+syscall 59 entry
+syscall 59 exit
+syscall 1 entry
+syscall 1 exit
+syscall 231 entry
+```
+
+On x86-64 Linux, `59` is `execve`, `1` is `write`, and `231` is `exit_group`. System-call numbers differ between architectures.
+
+## Testing Status
+
+Results below are **pending validation**. Update this table with real outcomes after running each test.
+
+| Test case | Expected behavior | Actual result / status |
+|---|---|---|
+| Launch a simple program (e.g., Hello World) | Target starts under the tracer and runs to completion | Pending validation |
+| Monitor system-call events | Entry and exit events are captured and displayed | Pending validation |
+| Handle invalid arguments (missing or nonexistent program) | Tool reports an error without crashing | Pending validation |
+| Terminate the target process | Tracer detects termination and exits cleanly | Pending validation |
+
+## Limitations
+
+- Tracing is simplified compared to the full `strace` utility.
+- Register information is platform-dependent, and system-call numbers are architecture-specific.
+- Tracing a process may require suitable permissions on the system.
+- Tracing adds overhead, so a traced program runs slower than normal.
+
+## Future Scope
+
+- System-call name decoding
+- Filtering by system call
+- Timestamps
+- Error reporting
+- Improved output formatting
+
+## Project Structure
+
+> Update this section to match your repository.
+
+```
+.
+├── mini_strace.c    # Tracer source code
+└── README.md        # Project documentation
+```
